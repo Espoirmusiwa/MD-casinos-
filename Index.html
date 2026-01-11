@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Casino Virtuel</title>
+<style>
+body {
+  margin:0;
+  font-family:'Segoe UI', sans-serif;
+  background: rgba(15,23,42,0.95);
+  color:#fff;
+  min-height:100vh;
+  position: relative;
+}
+h1,h2,h3 { margin-bottom:15px; }
+section { display:none; padding:20px; min-height:90vh; position:relative; }
+button { padding:10px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; background:#22c55e; color:#020617; transition:0.3s; margin-top:10px; }
+button:hover { opacity:0.9; }
+input { padding:8px; margin:5px 0; width:100%; border-radius:5px; border:none; }
+
+.gameCard {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+  border-radius: 15px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.3s, background 0.3s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.gameCard:hover { background: rgba(34,197,94,0.8); transform: translateY(-5px); }
+
+.card { background: rgba(0,0,0,0.4); padding:20px; border-radius:15px; max-width:500px; margin:auto; }
+
+#gamesContainer { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:20px; }
+
+#menuIcon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px; height: 40px;
+  background: #22c55e;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: bold;
+  z-index: 1000;
+}
+
+#menuDropdown {
+  position: absolute;
+  top: 70px;
+  right: 20px;
+  background: rgba(0,0,0,0.85);
+  border-radius: 10px;
+  padding: 15px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+}
+</style>
+</head>
+<body>
+
+<!-- INSCRIPTION -->
+<section id="register">
+  <h1>Inscription</h1>
+  <input type="text" id="regName" placeholder="Nom">
+  <input type="text" id="regSurname" placeholder="Prénom">
+  <input type="text" id="regPhone" placeholder="Numéro de téléphone">
+  <input type="password" id="regPass" placeholder="Mot de passe">
+  <button onclick="register()">S'inscrire</button>
+  <p>Déjà inscrit ? <button onclick="showSection('login')">Se connecter</button></p>
+</section>
+
+<!-- CONNEXION -->
+<section id="login">
+  <h1>Connexion</h1>
+  <input type="text" id="logPhone" placeholder="Numéro de téléphone">
+  <input type="password" id="logPass" placeholder="Mot de passe">
+  <button onclick="login()">Se connecter</button>
+  <p>Pas de compte ? <button onclick="showSection('register')">S'inscrire</button></p>
+</section>
+
+<!-- TABLEAU DE BORD -->
+<section id="dashboard">
+  <div id="menuIcon" onclick="toggleMenu()">☰</div>
+  <div id="menuDropdown">
+    <button onclick="showProfile()">Mon Profil</button>
+    <button onclick="showDeposit()">Dépôt</button>
+    <button onclick="showWithdraw()">Retrait</button>
+  </div>
+
+  <h1>Tableau de Bord</h1>
+  <div id="balanceDisplay" style="font-weight:bold; margin-bottom:20px;">
+    Solde : <span id="balance">0</span> crédits
+  </div>
+
+  <div id="gamesContainer">
+    <div class="gameCard" onclick="showSection('roulette')">
+      <img src="https://cdn-icons-png.flaticon.com/512/1033/1033182.png" width="80" style="margin-bottom:10px;">
+      <h3>Roulette</h3>
+    </div>
+    <div class="gameCard" onclick="showSection('thimbles')">
+      <img src="https://cdn-icons-png.flaticon.com/512/2659/2659981.png" width="80" style="margin-bottom:10px;">
+      <h3>Thimbles</h3>
+    </div>
+    <div class="gameCard" onclick="showSection('penalty')">
+      <img src="https://cdn-icons-png.flaticon.com/512/194/194931.png" width="80" style="margin-bottom:10px;">
+      <h3>Penalty</h3>
+    </div>
+    <div class="gameCard" onclick="showSection('horseRace')">
+      <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" width="80" style="margin-bottom:10px;">
+      <h3>Course Chevaux</h3>
+    </div>
+    <div class="gameCard" onclick="showSection('dice')">
+      <img src="https://cdn-icons-png.flaticon.com/512/565/565547.png" width="80" style="margin-bottom:10px;">
+      <h3>Dice</h3>
+    </div>
+  </div>
+</section>
+
+<!-- PROFIL -->
+<section id="profile">
+  <h1>Mon Profil</h1>
+  <div class="card">
+    <p><strong>Nom :</strong> <span id="profName"></span></p>
+    <p><strong>Prénom :</strong> <span id="profSurname"></span></p>
+    <p><strong>Numéro :</strong> <span id="profPhone"></span></p>
+    <p><strong>Solde :</strong> <span id="profBalance"></span> crédits</p>
+    <button onclick="showSection('dashboard')">⬅ Retour</button>
+  </div>
+</section>
+
+<!-- DEPOT -->
+<section id="deposit">
+  <h1>Dépôt</h1>
+  <div class="card">
+    <input type="number" id="depositAmount" placeholder="Montant à déposer">
+    <button onclick="makeDeposit()">Valider le dépôt</button>
+    <button onclick="showSection('dashboard')">⬅ Retour</button>
+  </div>
+</section>
+
+<!-- RETRAIT -->
+<section id="withdraw">
+  <h1>Retrait</h1>
+  <div class="card">
+    <input type="number" id="withdrawAmount" placeholder="Montant à retirer">
+    <button onclick="makeWithdraw()">Valider le retrait</button>
+    <button onclick="showSection('dashboard')">⬅ Retour</button>
+  </div>
+</section>
+
+<!-- SERVICE CLIENT -->
+<section id="support">
+  <div class="card">
+    <h2>Service Client & À propos</h2>
+    <p style="line-height:1.6; margin-bottom:20px;">
+      Bienvenue sur notre casino virtuel ! Profitez de Roulette, Thimbles, Penalty, Course Chevaux et Dice.
+      Tous les utilisateurs reçoivent un bonus initial de 1000 crédits. Déposez, jouez et retirez vos gains facilement sous conditions.
+      Contactez-nous pour toute question ou assistance.
+    </p>
+    <h3>Contact :</h3>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+      <button onclick="window.open('https://wa.me/243978713440','_blank')">WhatsApp : +243978713440</button>
+      <button onclick="window.location.href='tel:+243978713450'">Appel : +243978713450</button>
+    </div>
+    <h3>Suivez-nous :</h3>
+    <div style="display:flex; justify-content:space-evenly; margin-top:15px;">
+      <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" width="50"></a>
+      <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" width="50"></a>
+      <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" width="50"></a>
+      <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" width="50"></a>
+    </div>
+    <button onclick="showSection('dashboard')" style="margin-top:25px;">⬅ Retour</button>
+  </div>
+</section>
+
+<!-- BOUTON SERVICE CLIENT FLOTTANT -->
+<div id="supportButton" style="
+    position: fixed; bottom: 20px; right: 20px;
+    background: #22c55e; color: #000; padding: 15px 20px;
+    border-radius: 50px; font-weight:bold; cursor:pointer;
+    box-shadow:0 4px 10px rgba(0,0,0,0.4); z-index:10000;
+    text-align:center;" onclick="showSection('support')">
+  Service Client
+</div>
+
+<script>
+// USERS
+function getUsers(){ return JSON.parse(localStorage.getItem("users")||"{}"); }
+function setUsers(users){ localStorage.setItem("users", JSON.stringify(users)); }
+
+// Affichage section
+function showSection(id){
+  document.querySelectorAll('section').forEach(s => s.style.display='none');
+  document.getElementById(id).style.display='block';
+  updateProfile(); updateBalance();
+}
+
+// INSCRIPTION
+function register(){
+  let name=document.getElementById('regName').value;
+  let surname=document.getElementById('regSurname').value;
+  let phone=document.getElementById('regPhone').value;
+  let pass=document.getElementById('regPass').value;
+  if(!name||!surname||!phone||!pass){ alert("Veuillez remplir tous les champs"); return; }
+  let users=getUsers();
+  if(users[phone]){ alert("Numéro déjà utilisé, connectez-vous"); return; }
+  users[phone]={name,surname,pass,balance:1000,totalDeposit:0};
+  localStorage.setItem("currentUser",phone);
+  setUsers(users);
+  showSection('dashboard');
+}
+
+// CONNEXION
+function login(){
+  let phone=document.getElementById('logPhone').value;
+  let pass=document.getElementById('logPass').value;
+  let users=getUsers();
+  if(!users[phone] || users[phone].pass!==pass){ alert("Numéro ou mot de passe incorrect"); return; }
+  localStorage.setItem("currentUser",phone);
+  showSection('dashboard');
+}
+
+// MENU
+function toggleMenu(){
+  const menu=document.getElementById("menuDropdown");
+  menu.style.display=(menu.style.display==="flex")?"none":"flex";
+}
+
+// PROFIL
+function updateProfile(){
+  let phone=localStorage.getItem("currentUser");
+  if(!phone) return;
+  let users=getUsers();
+  document.getElementById("profName").textContent=users[phone].name;
+  document.getElementById("profSurname").textContent=users[phone].surname;
+  document.getElementById("profPhone").textContent=phone;
+  document.getElementById("profBalance").textContent=users[phone].balance;
+  document.getElementById("balance").textContent=users[phone].balance;
+}
+function showProfile(){ toggleMenu(); showSection('profile'); }
+
+// DEPOT
+function showDeposit(){ toggleMenu(); showSection('deposit'); }
+function makeDeposit(){
+  let amount=parseInt(document.getElementById('depositAmount').value);
+  if(isNaN(amount)||amount<=0){ alert("Montant invalide"); return; }
+  let phone=localStorage.getItem("currentUser"); if(!phone) return;
+  let users=getUsers();
+  users[phone].balance += amount; users[phone].totalDeposit += amount;
+  setUsers(users); updateBalance(); alert("Dépôt effectué !"); document.getElementById('depositAmount').value='';
+}
+
+// RETRAIT
+function showWithdraw(){ toggleMenu(); showSection('withdraw'); }
+function makeWithdraw(){
+  let amount=parseInt(document.getElementById('withdrawAmount').value);
+  let phone=localStorage.getItem("currentUser"); if(!phone) return;
+  let users=getUsers();
+  if(users[phone].totalDeposit<5000){ alert("Vous devez déposer au moins 5000 crédits pour retirer."); return; }
+  if(isNaN(amount)||amount<=0 || amount>users[phone].balance){ alert("Montant invalide"); return; }
+  users[phone].balance -= amount; setUsers(users); updateBalance(); alert("Retrait effectué !");
+  document.getElementById('withdrawAmount').value='';
+}
+
+// Affichage initial
+showSection('register');
+</script>
+</body>
+</html>
